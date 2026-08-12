@@ -22,9 +22,41 @@ retail-intelligence/
 
 ## 🏛️ Medallion Data Architecture
 
-```text
-Source Systems ──> Bronze Layer ──> Silver Layer ──> Gold Layer ──> Streamlit Dashboard
-(Raw Ingestion)     (Staging)        (Cleaned Sales)   (Aggregates)   (Executive UI)
+```mermaid
+flowchart LR
+    subgraph S["📥 Ingestion"]
+        S1["POS & E-Commerce Orders"]
+    end
+
+    subgraph B["🥉 Bronze Layer"]
+        B1["BRONZE.STORE_SALES<br/><i>(Raw Append-Only Logs)</i>"]
+    end
+
+    subgraph SV["🥈 Silver Layer"]
+        SV1["SILVER.SALES<br/><i>(Cleaned & Deduplicated)</i>"]
+    end
+
+    subgraph G["🥇 Gold Layer"]
+        G1["GOLD.SALES_BY_CATEGORY<br/><i>(Category Aggregates)</i>"]
+        G2["GOLD.TOP_PRODUCTS<br/><i>(Product Rankings)</i>"]
+    end
+
+    subgraph UI["⚡ Application Layer"]
+        APP["Streamlit Dashboard<br/><b>Retail Intelligence Platform</b>"]
+    end
+
+    S --> B
+    B --> SV
+    SV --> G1
+    SV --> G2
+    G1 --> APP
+    G2 --> APP
+
+    style S fill:#f8fafc,stroke:#94a3b8,stroke-width:1px
+    style B fill:#fff7ed,stroke:#fdba74,stroke-width:1px
+    style SV fill:#f1f5f9,stroke:#cbd5e1,stroke-width:1px
+    style G fill:#fefce8,stroke:#fde047,stroke-width:1px
+    style UI fill:#eff6ff,stroke:#3b82f6,stroke-width:2px
 ```
 
 The application queries two pre-aggregated Gold layer tables in the `MEDICAPS_RETAIL` database:
