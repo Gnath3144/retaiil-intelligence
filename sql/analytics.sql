@@ -1,0 +1,47 @@
+-- ==============================================================================
+-- ANALYTICS & REPORTING QUERIES
+-- Database: MEDICAPS_RETAIL
+-- Schema: GOLD
+-- ==============================================================================
+
+-- 1. Category Revenue and Transaction Volume Summary
+SELECT
+    CATEGORY,
+    TOTAL_REVENUE,
+    TOTAL_UNITS,
+    TOTAL_TRANSACTIONS,
+    AVERAGE_TRANSACTION_VALUE,
+    ROUND((TOTAL_REVENUE / SUM(TOTAL_REVENUE) OVER ()) * 100, 2) AS REVENUE_SHARE_PERCENT
+FROM MEDICAPS_RETAIL.GOLD.SALES_BY_CATEGORY
+ORDER BY TOTAL_REVENUE DESC;
+
+-- 2. Top 3 Ranked Products within Every Category (Window Function)
+WITH RankedProducts AS (
+    SELECT
+        PRODUCT_NAME,
+        CATEGORY,
+        REVENUE,
+        DENSE_RANK() OVER (
+            PARTITION BY CATEGORY
+            ORDER BY REVENUE DESC
+        ) AS PRODUCT_RANK
+    FROM MEDICAPS_RETAIL.GOLD.TOP_PRODUCTS
+)
+SELECT
+    CATEGORY,
+    PRODUCT_RANK,
+    PRODUCT_NAME,
+    REVENUE
+FROM RankedProducts
+WHERE PRODUCT_RANK <= 3
+ORDER BY CATEGORY ASC, PRODUCT_RANK ASC;
+
+-- 3. High Volume vs High Margin Performance Matrix
+SELECT
+    CATEGORY,
+    TOTAL_REVENUE,
+    TOTAL_UNITS,
+    ROUND(TOTAL_REVENUE / NULLIF(TOTAL_UNITS, 0), 2) AS REVENUE_PER_UNIT,
+    AVERAGE_TRANSACTION_VALUE
+FROM MEDICAPS_RETAIL.GOLD.SALES_BY_CATEGORY
+ORDER BY AVERAGE_TRANSACTION_VALUE DESC;
